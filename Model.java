@@ -1,7 +1,5 @@
 package com.rogovrt;
 
-import com.sun.javafx.charts.ChartLayoutAnimator;
-
 import java.sql.*;
 
 public class Model {
@@ -14,35 +12,31 @@ public class Model {
     public static String requestFromUser(String command, String name, String surname, String phone) throws SQLException, ClassNotFoundException {
         Class.forName(driver);
         String out = "";
+        String empty = "";
         Connection connection = DriverManager.getConnection(url);
-        if ((name == null) && (surname == null) && (phone == null)) {
+        if ((name.equals(empty)) && (surname.equals(empty)) && (phone.equals(empty))) {
             return "Type something in fields\n";
         }
 
         if (command.equals("Find")) {
             Statement statement = connection.createStatement();
             String request = "SELECT * FROM PHONEBOOK WHERE ";
-            if (name != null) request = request + "NAME = '" + name + "' AND ";
-            if (surname != null) request = request + "SURNAME = '" + surname + "' AND ";
-            if (phone != null) request = request + "PHONE = '" + phone + "' AND ";
+            if (!name.equals(empty)) request = request + "NAME = '" + name + "' AND ";
+            if (!surname.equals(empty)) request = request + "SURNAME = '" + surname + "' AND ";
+            if (!phone.equals(empty)) request = request + "PHONE = '" + phone + "' AND ";
             request = request.substring(0, request.length() - 4);
-            System.out.println(request);
             ResultSet resultSet = statement.executeQuery(request);
-            /*if (!resultSet.next())
-                out = "No such record\n";
-            else {*/
-                while (resultSet.next()) {
+            while (resultSet.next()) {
                     out = out + resultSet.getString("NAME") + ' ' + resultSet.getString("SURNAME") + " : " + resultSet.getString("PHONE") + '\n';
-                    //System.out.printf("%s %s : %s\n", resultSet.getString("NAME"), resultSet.getString("SURNAME"), resultSet.getString("PHONE"));
-                }
-            //}
+            }
+            if (out.equals(empty)) out = "No such record\n";
             statement.close();
         }
 
         if (command.equals("Add")) {
             Statement statement = connection.createStatement();
             String request = "INSERT INTO PHONEBOOK(NAME, SURNAME"; //this columns are not null
-            if (phone != null) {
+            if (!phone.equals(empty)) {
                 request = request + ", PHONE) VALUES('" + name + "', '" + surname + "', '" + phone + "')";
             }
             else {
@@ -56,11 +50,12 @@ public class Model {
         if (command.equals("Delete")) {
             Statement statement = connection.createStatement();
             String request = "DELETE FROM PHONEBOOK WHERE ";
-            if (name != null) request = request + "NAME = '" + name + "' AND ";
-            if (surname != null) request = request + "SURNAME = '" + surname + "' AND ";
-            if (phone != null) request = request + "PHONE = '" + phone + "' AND ";
+            if (!name.equals(empty)) request = request + "NAME = '" + name + "' AND ";
+            if (!surname.equals(empty)) request = request + "SURNAME = '" + surname + "' AND ";
+            if (!phone.equals(empty)) request = request + "PHONE = '" + phone + "' AND ";
             request = request.substring(0, request.length() - 4);
-            out = "Delete request done\n";
+            if (statement.execute(request)) out = "Delete request done\n";
+            else out = "Delete request failed\n";
             statement.close();
         }
         connection.close();
